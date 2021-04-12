@@ -40,7 +40,7 @@ var path_1 = require("path");
 var chalk_1 = __importDefault(require("chalk"));
 var handlebars_1 = __importDefault(require("handlebars"));
 var yargs_1 = __importDefault(require("yargs"));
-var argv = yargs_1.default.command('Bla', 'Ble').argv;
+var argv = yargs_1.default.command('configFiles', 'Path to the config files').argv;
 var readFiles = function (args) {
     if (!args.configFiles) {
         throw new Error('No path to work with.');

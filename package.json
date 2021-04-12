@@ -1,13 +1,14 @@
 {
   "name": "files-from-template",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Create files from templates defined by the user.",
   "main": "./dist/index.js",
   "scripts": {
     "test": "npm test",
     "build": "node ./src/utils/clear-dist-folder.js && tsc",
     "prepublish": "npm run build",
-    "files-from-template": "node ./dist/index.js"
+    "create": "npm run build && node ./dist/index.js --config-files='./.files-from-template/config-files'",
+    "help": "npm run build && node ./dist/index.js --help"
   },
   "repository": {
     "type": "git",

@@ -7,7 +7,10 @@ import chalk from 'chalk';
 import handlebars from 'handlebars';
 import yargs from 'yargs';
 
-const argv = yargs.command<{ configFiles?: string }>('Bla', 'Ble').argv;
+const argv = yargs.command<{ configFiles?: string }>(
+  'configFiles',
+  'Path to the config files',
+).argv;
 
 const readFiles = (args: Record<string, any>) => {
   if (!args.configFiles) {
