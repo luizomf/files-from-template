@@ -6,7 +6,8 @@
   "scripts": {
     "test": "npm test",
     "build": "node ./src/utils/clear-dist-folder.js && tsc",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "files-from-template": "node ./dist/index.js"
   },
   "repository": {
     "type": "git",
