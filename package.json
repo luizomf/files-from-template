@@ -1,6 +1,6 @@
 {
   "name": "files-from-template",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Create files from templates defined by the user.",
   "main": "./dist/index.js",
   "scripts": {
