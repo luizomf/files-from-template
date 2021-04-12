@@ -5,7 +5,7 @@
 You don't have to install it. Just create your `config-files` and your `template-files`, then execute:
 
 ```
-npx files-from-templates --config-files="./path/to/config/files"
+npx files-from-template --config-files="./path/to/config/files"
 ```
 
 A config file is a `JSON` file that teach `files-from-template` how to create the output file.
@@ -31,7 +31,7 @@ It is pretty simple, but it must have at least two keys: `templateFilePath` and 
 If you dont want to specify a `template` with the variables to replace, you can also add your variable names and real names via command. Like so:
 
 ```sh
-npx files-from-templates --config-files="./path/to/config/files" --anyVariable1="realVariable1" --anyVariable2="realVariable2" --anyVariable3="realVariable3"
+npx files-from-template --config-files="./path/to/config/files" --anyVariable1="realVariable1" --anyVariable2="realVariable2" --anyVariable3="realVariable3"
 ```
 
 The example above is exactly the same as:

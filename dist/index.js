@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 "use strict";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -29,10 +41,11 @@ var chalk_1 = __importDefault(require("chalk"));
 var handlebars_1 = __importDefault(require("handlebars"));
 var yargs_1 = __importDefault(require("yargs"));
 var argv = yargs_1.default.command('Bla', 'Ble').argv;
-var readFiles = function (path) {
-    if (!path) {
+var readFiles = function (args) {
+    if (!args.configFiles) {
         throw new Error('No path to work with.');
     }
+    var path = args.configFiles;
     try {
         var stat = fs_1.default.lstatSync(path);
         var rootDir = path;
@@ -48,7 +61,7 @@ var readFiles = function (path) {
             }
             var filePath = path_1.resolve(rootDir, file);
             Promise.resolve().then(function () { return __importStar(require(filePath)); }).then(function (contents) {
-                readFileContents(contents, filePath);
+                readFileContents(contents, filePath, args);
             })
                 .catch(function (e) {
                 displayError(e);
@@ -64,9 +77,6 @@ var readFiles = function (path) {
     }
 };
 var validateFileContents = function (contents, filePath) {
-    if (!contents.template) {
-        throw new TypeError("Please, provide 'template' to " + filePath);
-    }
     if (!contents.outputFilePath) {
         throw new TypeError("Please, provide 'outputFilePath' to " + filePath);
     }
@@ -74,13 +84,13 @@ var validateFileContents = function (contents, filePath) {
         throw new TypeError("Please, provide 'templateFilePath' to " + filePath);
     }
 };
-var readFileContents = function (contents, filePath) {
+var readFileContents = function (contents, filePath, args) {
     validateFileContents(contents, filePath);
-    var outputFilePath = contents.outputFilePath, templateFilePath = contents.templateFilePath, template = contents.template;
+    var outputFilePath = contents.outputFilePath, templateFilePath = contents.templateFilePath, _a = contents.template, template = _a === void 0 ? {} : _a;
     var templateFileContents = handlebars_1.default.compile(fs_1.default.readFileSync(templateFilePath, {
         encoding: 'utf-8',
     }));
-    var compiledFileContents = templateFileContents(template);
+    var compiledFileContents = templateFileContents(__assign(__assign({}, template), args));
     var baseOutputDir = path_1.dirname(outputFilePath);
     if (!fs_1.default.existsSync(baseOutputDir)) {
         fs_1.default.mkdirSync(baseOutputDir);
@@ -102,7 +112,7 @@ var displayError = function (error) {
     console.log();
 };
 if (argv === null || argv === void 0 ? void 0 : argv.configFiles) {
-    readFiles(argv === null || argv === void 0 ? void 0 : argv.configFiles);
+    readFiles(argv);
 }
 else {
     displayError(new Error('Please, provide --config-files="./path-to-config-files"'));
