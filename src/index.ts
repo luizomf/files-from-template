@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from 'fs';
 import { resolve, dirname } from 'path';
 import chalk from 'chalk';

@@ -37,5 +37,8 @@
     "chalk": "^4.1.0",
     "handlebars": "^4.7.7",
     "yargs": "^16.2.0"
+  },
+  "bin": {
+    "files-from-template": "./dist/index.js"
   }
 }
