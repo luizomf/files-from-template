@@ -145,9 +145,24 @@ The command:
 npx files-from-template --config-files=".files-from-template/config-files"
 ```
 
+The output:
+
+```tsx
+import { ChildComponent } from './any-module';
+
+export const ParentComponent = () => {
+  return (
+    <ChildComponent>
+      <h1>Hello world!</h1>
+    </ChildComponent>
+  );
+};
+```
+
 As I told you above, you can use a mix of "template" and command line arguments. In that case, that would be better. When I run the command above (without variables), my files are compiled normally, but the first example breaks because handlebars won't find any value for the variables `counter`, `counterValue` and `counterMax`. That will make the output file from the first example really strange:
 
-```javascript
+Strange looking file:
+```
 let  = ;
 
 while ( < ) {
@@ -163,3 +178,29 @@ npx files-from-template --config-files=".files-from-template/config-files" --cou
 ```
 
 And both files will be perfectly created. That is the advantage of using a mix a template variables and command line arguments.
+
+
+Output 1:
+```javascript
+let counter = 0;
+
+while (counter < 10) {
+  console.log(counter);
+  counter++;
+}
+```
+
+And output 2:
+```tsx
+import { ChildComponent } from './any-module';
+
+export const ParentComponent = () => {
+  return (
+    <ChildComponent>
+      <h1>Hello world!</h1>
+    </ChildComponent>
+  );
+};
+```
+
+You can add as many config files and template files you'd like. Each config file will generate an output file. This may save you time when create the same files over and over again, as React Components, Storybook files, styled components files, test files, etc...
