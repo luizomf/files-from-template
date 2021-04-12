@@ -1,0 +1,40 @@
+{
+  "name": "files-from-template",
+  "version": "0.0.2",
+  "description": "Create files from templates defined by the user.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "npm test",
+    "build": "node ./src/utils/clear-dist-folder.js && tsc",
+    "preinstall": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-luizomf:luizomf/files-from-template.git"
+  },
+  "keywords": [
+    "files",
+    "template",
+    "create files"
+  ],
+  "author": "Otávio Miranda <luizomf@gmail.com> (https://github.com/luizomf)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/inquirer": "^7.3.1",
+    "@types/node": "^14.14.37",
+    "@types/yargs": "^16.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
+    "eslint": "^7.24.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "chalk": "^4.1.0",
+    "handlebars": "^4.7.7",
+    "yargs": "^16.2.0"
+  }
+}
