@@ -1,0 +1,9 @@
+{
+  "templateFilePath": "./.files-from-template/template-files/template-file-example-1.hbs",
+  "outputFilePath": "./src/temp-output/output-file1.js",
+  "template": {
+    "counter": "counter",
+    "counterValue": 0,
+    "counterMax": 10
+  }
+}

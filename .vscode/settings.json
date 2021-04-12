@@ -1,0 +1,5 @@
+{
+  "code-runner.executorMap": {
+    "typescript": "echo '--config-files=\"./.files-from-template/config-files\"' | xargs npx ts-node --files --transpile-only",
+  }
+}
