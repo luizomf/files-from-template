@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import fs from 'fs';
 import { resolve, dirname } from 'path';
@@ -8,10 +9,12 @@ import yargs from 'yargs';
 
 const argv = yargs.command<{ configFiles?: string }>('Bla', 'Ble').argv;
 
-const readFiles = (path?: string) => {
-  if (!path) {
+const readFiles = (args: Record<string, any>) => {
+  if (!args.configFiles) {
     throw new Error('No path to work with.');
   }
+
+  const path = args.configFiles as string;
 
   try {
     const stat = fs.lstatSync(path);
@@ -34,7 +37,7 @@ const readFiles = (path?: string) => {
 
       import(filePath)
         .then((contents) => {
-          readFileContents(contents, filePath);
+          readFileContents(contents, filePath, args);
         })
         .catch((e) => {
           displayError(e);
@@ -46,13 +49,9 @@ const readFiles = (path?: string) => {
 };
 
 const validateFileContents = (
-  contents: Record<string, string>,
+  contents: Record<string, any>,
   filePath: string,
 ) => {
-  if (!contents.template) {
-    throw new TypeError(`Please, provide 'template' to ${filePath}`);
-  }
-
   if (!contents.outputFilePath) {
     throw new TypeError(`Please, provide 'outputFilePath' to ${filePath}`);
   }
@@ -63,12 +62,13 @@ const validateFileContents = (
 };
 
 const readFileContents = (
-  contents: Record<string, string>,
+  contents: Record<string, any>,
   filePath: string,
+  args: Record<string, any>,
 ) => {
   validateFileContents(contents, filePath);
 
-  const { outputFilePath, templateFilePath, template } = contents;
+  const { outputFilePath, templateFilePath, template = {} } = contents;
 
   const templateFileContents = handlebars.compile(
     fs.readFileSync(templateFilePath, {
@@ -76,7 +76,7 @@ const readFileContents = (
     }),
   );
 
-  const compiledFileContents = templateFileContents(template);
+  const compiledFileContents = templateFileContents({ ...template, ...args });
   const baseOutputDir = dirname(outputFilePath);
 
   if (!fs.existsSync(baseOutputDir)) {
@@ -108,7 +108,7 @@ const displayError = (error: Error) => {
 };
 
 if (argv?.configFiles) {
-  readFiles(argv?.configFiles);
+  readFiles(argv);
 } else {
   displayError(
     new Error('Please, provide --config-files="./path-to-config-files"'),
