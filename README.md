@@ -227,3 +227,40 @@ npx files-from-template --config-files="./.files-from-template/config-files" --d
 The output files would look like: `2021-04-12-21-37-15.js`.
 
 Note that `date +"%Y-%m-%d-%H-%M-%S"` is the command I used to produce the date value, it has nothing to do with files-from-template, but [GNU Core Utilities](https://www.gnu.org/software/coreutils/). If you are on Linux, just run `date +"%Y-%m-%d-%H-%M-%S"` on your terminal and you'll see what I'm talking about.
+
+## npm scripts
+
+Cleanest way to use files-from-template is using npm scripts. Just add a script to your package.json and use "npm run script-name". For example:
+
+**Install**:
+
+```
+npm i -D files-from-template
+```
+
+Add to package.json (the command is just an example):
+
+```json
+{
+  // ...
+  "scripts": {
+    "test": "npm test",
+    "start": "node ./index.js",
+    "ffp:example": "files-from-template --config-files='.files-from-template/config-files' --var1='val1' --var2='val2' date=`date +%Y-%m-%d-%H-%M-%S`"
+    // ...
+  }
+  // ...
+}
+```
+
+Now just run:
+
+```
+npm run ffp:example
+```
+
+If you want to pass command arguments to ffp:
+
+```
+npm run ffp:example -- --arg1='val1' --arg2='val2'
+```
