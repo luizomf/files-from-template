@@ -1,4 +1,4 @@
 {
   "templateFilePath": "./.files-from-template/template-files/template-file-example-1.hbs",
-  "outputFilePath": "./src/temp-output/output-file1.js"
+  "outputFilePath": "./src/temp-output/{{ date }}.js"
 }

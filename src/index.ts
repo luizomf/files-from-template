@@ -73,21 +73,27 @@ const readFileContents = (
 
   const { outputFilePath, templateFilePath, template = {} } = contents;
 
+  const outputFilePathTemplate = handlebars.compile(outputFilePath);
+  const compiledOutputFilePath = outputFilePathTemplate(args);
+
+  const templateFilePathTemplate = handlebars.compile(templateFilePath);
+  const compiledTemplateFilePath = templateFilePathTemplate(args);
+
   const templateFileContents = handlebars.compile(
-    fs.readFileSync(templateFilePath, {
+    fs.readFileSync(compiledTemplateFilePath, {
       encoding: 'utf-8',
     }),
   );
 
   const compiledFileContents = templateFileContents({ ...template, ...args });
-  const baseOutputDir = dirname(outputFilePath);
+  const baseOutputDir = dirname(compiledOutputFilePath);
 
   if (!fs.existsSync(baseOutputDir)) {
     fs.mkdirSync(baseOutputDir);
   }
 
   fs.writeFile(
-    outputFilePath,
+    compiledOutputFilePath,
     compiledFileContents,
     {
       encoding: 'utf-8',
@@ -97,7 +103,9 @@ const readFileContents = (
         displayError(error);
       }
 
-      console.log(chalk.green(`File ${outputFilePath} written successfully.`));
+      console.log(
+        chalk.green(`File ${compiledOutputFilePath} written successfully.`),
+      );
     },
   );
 };

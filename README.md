@@ -10,7 +10,7 @@ npx files-from-template --config-files="./path/to/config/files"
 
 A config file is a `JSON` file that teach `files-from-template` how to create the output file.
 
-It is pretty simple, but it must have at least two keys: `templateFilePath` and `outputFilePath`. An optional key `template` may be used to replace handlebars variables. See below:
+It is pretty simple, but it must have at least two keys: `templateFilePath` and `outputFilePath`. An optional key `template` may be used to replace handlebars variables. See bellow:
 
 ```json
 {
@@ -204,3 +204,26 @@ export const ParentComponent = () => {
 ```
 
 You can add as many config files and template files you'd like. Each config file will generate an output file. This may save you time when creating the same files over and over again, as React Components, Storybook files, styled components files, test files, css files, etc...
+
+## Variables for `templateFilePath` and `outputFilePath`
+
+You can use variable in the config files to. Take the example bellow using the GNU date command (normally for Linux Systems, but you can use whatever command you'd like).
+
+Config file:
+
+```json
+{
+  "templateFilePath": "./.files-from-template/template-files/template-file-example-1.hbs",
+  "outputFilePath": "./src/temp-output/{{ date }}.js"
+}
+```
+
+Now I have to provide a value for "date" variable. I'm going to use the GNU Date, so every seconds I run files-from-template I get a new file output.
+
+```
+npx files-from-template --config-files="./.files-from-template/config-files" --date=`date +"%Y-%m-%d-%H-%M-%S"`
+```
+
+The output files would look like: `2021-04-12-21-37-15.js`.
+
+Note that `date +"%Y-%m-%d-%H-%M-%S"` is the command I used to produce the date value, it has nothing to do with files-from-template, but [GNU Core Utilities](https://www.gnu.org/software/coreutils/). If you are on Linux, just run `date +"%Y-%m-%d-%H-%M-%S"` on your terminal and you'll see what I'm talking about.

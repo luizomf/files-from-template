@@ -87,21 +87,25 @@ var validateFileContents = function (contents, filePath) {
 var readFileContents = function (contents, filePath, args) {
     validateFileContents(contents, filePath);
     var outputFilePath = contents.outputFilePath, templateFilePath = contents.templateFilePath, _a = contents.template, template = _a === void 0 ? {} : _a;
-    var templateFileContents = handlebars_1.default.compile(fs_1.default.readFileSync(templateFilePath, {
+    var outputFilePathTemplate = handlebars_1.default.compile(outputFilePath);
+    var compiledOutputFilePath = outputFilePathTemplate(args);
+    var templateFilePathTemplate = handlebars_1.default.compile(templateFilePath);
+    var compiledTemplateFilePath = templateFilePathTemplate(args);
+    var templateFileContents = handlebars_1.default.compile(fs_1.default.readFileSync(compiledTemplateFilePath, {
         encoding: 'utf-8',
     }));
     var compiledFileContents = templateFileContents(__assign(__assign({}, template), args));
-    var baseOutputDir = path_1.dirname(outputFilePath);
+    var baseOutputDir = path_1.dirname(compiledOutputFilePath);
     if (!fs_1.default.existsSync(baseOutputDir)) {
         fs_1.default.mkdirSync(baseOutputDir);
     }
-    fs_1.default.writeFile(outputFilePath, compiledFileContents, {
+    fs_1.default.writeFile(compiledOutputFilePath, compiledFileContents, {
         encoding: 'utf-8',
     }, function (error) {
         if (error) {
             displayError(error);
         }
-        console.log(chalk_1.default.green("File " + outputFilePath + " written successfully."));
+        console.log(chalk_1.default.green("File " + compiledOutputFilePath + " written successfully."));
     });
 };
 var displayError = function (error) {
