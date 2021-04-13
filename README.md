@@ -246,7 +246,7 @@ Add to package.json (the command is just an example):
   "scripts": {
     "test": "npm test",
     "start": "node ./index.js",
-    "ffp:example": "files-from-template --config-files='.files-from-template/config-files' --var1='val1' --var2='val2' --date=`date +%Y-%m-%d-%H-%M-%S`"
+    "fft:example": "files-from-template --config-files='.files-from-template/config-files' --var1='val1' --var2='val2' --date=`date +%Y-%m-%d-%H-%M-%S`"
     // ...
   }
   // ...
@@ -256,11 +256,11 @@ Add to package.json (the command is just an example):
 Now just run:
 
 ```
-npm run ffp:example
+npm run fft:example
 ```
 
-If you want to pass command arguments to ffp:
+If you want to pass command arguments to fft:
 
 ```
-npm run ffp:example -- --arg1='val1' --arg2='val2'
+npm run fft:example -- --arg1='val1' --arg2='val2'
 ```
