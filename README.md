@@ -246,7 +246,7 @@ Add to package.json (the command is just an example):
   "scripts": {
     "test": "npm test",
     "start": "node ./index.js",
-    "ffp:example": "files-from-template --config-files='.files-from-template/config-files' --var1='val1' --var2='val2' date=`date +%Y-%m-%d-%H-%M-%S`"
+    "ffp:example": "files-from-template --config-files='.files-from-template/config-files' --var1='val1' --var2='val2' --date=`date +%Y-%m-%d-%H-%M-%S`"
     // ...
   }
   // ...
