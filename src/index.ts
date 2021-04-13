@@ -32,6 +32,7 @@ const readFiles = async (args: Record<string, any>) => {
     const files = fs.readdirSync(rootDir);
     console.log();
 
+    const answered = {};
     for await (const file of files) {
       if (!file.endsWith('.json')) {
         console.log(chalk.bold.red(file), 'is not a json file. Skipping...');
@@ -42,7 +43,7 @@ const readFiles = async (args: Record<string, any>) => {
 
       try {
         const contents = await import(filePath);
-        await readFileContents(contents, filePath, args);
+        await readFileContents(contents, filePath, args, answered);
       } catch (e) {
         await displayError(e);
       }
@@ -69,6 +70,7 @@ const readFileContents = async (
   contents: Record<string, any>,
   filePath: string,
   args: Record<string, any>,
+  answered: Record<string, any>,
 ) => {
   validateFileContents(contents, filePath);
 
@@ -79,21 +81,21 @@ const readFileContents = async (
     ask = false,
   } = contents;
 
-  const mergedArgs = { ...template, ...args };
+  const mergedArgs = { ...template, ...args, ...answered };
 
   if (ask && Array.isArray(ask)) {
     const answers = await inquirer.prompt(
       ask.map((arg: string) => ({
         name: arg,
+        default: mergedArgs[arg] ? mergedArgs[arg] : undefined,
         message: `Substitution value for "${arg}"`,
         type: 'input',
       })),
     );
 
-    Object.assign(mergedArgs, answers);
+    Object.assign(answered, answers);
+    Object.assign(mergedArgs, answered);
   }
-
-  console.log();
 
   const outputFilePathTemplate = handlebars.compile(outputFilePath);
   const compiledOutputFilePath = outputFilePathTemplate(mergedArgs);

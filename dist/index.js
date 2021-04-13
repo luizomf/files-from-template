@@ -90,7 +90,7 @@ var argv = yargs_parser_1.default(process.argv.slice(2), {
     },
 });
 var readFiles = function (args) { return __awaiter(void 0, void 0, void 0, function () {
-    var path, stat, rootDir, files, files_1, files_1_1, file, filePath, contents, e_1, e_2_1, e_3;
+    var path, stat, rootDir, files, answered, files_1, files_1_1, file, filePath, contents, e_1, e_2_1, e_3;
     var e_2, _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -109,6 +109,7 @@ var readFiles = function (args) { return __awaiter(void 0, void 0, void 0, funct
                 }
                 files = fs_1.default.readdirSync(rootDir);
                 console.log();
+                answered = {};
                 _b.label = 2;
             case 2:
                 _b.trys.push([2, 12, 13, 18]);
@@ -129,7 +130,7 @@ var readFiles = function (args) { return __awaiter(void 0, void 0, void 0, funct
                 return [4 /*yield*/, Promise.resolve().then(function () { return __importStar(require(filePath)); })];
             case 6:
                 contents = _b.sent();
-                return [4 /*yield*/, readFileContents(contents, filePath, args)];
+                return [4 /*yield*/, readFileContents(contents, filePath, args, answered)];
             case 7:
                 _b.sent();
                 return [3 /*break*/, 10];
@@ -174,26 +175,27 @@ var validateFileContents = function (contents, filePath) {
         throw new TypeError("Please, provide 'templateFilePath' to " + filePath);
     }
 };
-var readFileContents = function (contents, filePath, args) { return __awaiter(void 0, void 0, void 0, function () {
+var readFileContents = function (contents, filePath, args, answered) { return __awaiter(void 0, void 0, void 0, function () {
     var outputFilePath, templateFilePath, _a, template, _b, ask, mergedArgs, answers, outputFilePathTemplate, compiledOutputFilePath, templateFilePathTemplate, compiledTemplateFilePath, templateFileContents, compiledFileContents, baseOutputDir, e_4;
     return __generator(this, function (_c) {
         switch (_c.label) {
             case 0:
                 validateFileContents(contents, filePath);
                 outputFilePath = contents.outputFilePath, templateFilePath = contents.templateFilePath, _a = contents.template, template = _a === void 0 ? {} : _a, _b = contents.ask, ask = _b === void 0 ? false : _b;
-                mergedArgs = __assign(__assign({}, template), args);
+                mergedArgs = __assign(__assign(__assign({}, template), args), answered);
                 if (!(ask && Array.isArray(ask))) return [3 /*break*/, 2];
                 return [4 /*yield*/, inquirer_1.default.prompt(ask.map(function (arg) { return ({
                         name: arg,
+                        default: mergedArgs[arg] ? mergedArgs[arg] : undefined,
                         message: "Substitution value for \"" + arg + "\"",
                         type: 'input',
                     }); }))];
             case 1:
                 answers = _c.sent();
-                Object.assign(mergedArgs, answers);
+                Object.assign(answered, answers);
+                Object.assign(mergedArgs, answered);
                 _c.label = 2;
             case 2:
-                console.log();
                 outputFilePathTemplate = handlebars_1.default.compile(outputFilePath);
                 compiledOutputFilePath = outputFilePathTemplate(mergedArgs);
                 templateFilePathTemplate = handlebars_1.default.compile(templateFilePath);
