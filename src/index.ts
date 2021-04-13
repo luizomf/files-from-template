@@ -1,49 +1,48 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import fs from 'fs';
+import { promises as fs, existsSync as fileExists } from 'fs';
 import { resolve, dirname } from 'path';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import handlebars from 'handlebars';
 import parser from 'yargs-parser';
 
-const argv = parser(process.argv.slice(2), {
-  configuration: {
-    'camel-case-expansion': false,
-  },
-});
-
-const readFiles = async (args: Record<string, any>) => {
-  if (!args['config-files']) {
-    throw new Error('No path to work with.');
-  }
-
-  const path = args['config-files'] as string;
+export const readFiles = async (commandArguments: Record<string, any>) => {
+  const configFilesPath = `${commandArguments['config-files']}`;
 
   try {
-    const stat = fs.lstatSync(path);
-    const rootDir = path;
+    const lsStat = await fs.lstat(configFilesPath);
+    const rootDirectory = configFilesPath;
 
-    if (!stat.isDirectory) {
-      throw new Error(`${path} is not a directory`);
+    if (!lsStat.isDirectory) {
+      throw new Error(`🚨 ${configFilesPath} is not a directory\n`);
     }
 
-    const files = fs.readdirSync(rootDir);
+    const configFiles = await fs.readdir(rootDirectory);
     console.log();
 
-    const answered = {};
-    for await (const file of files) {
-      if (!file.endsWith('.json')) {
-        console.log(chalk.bold.red(file), 'is not a json file. Skipping...');
+    const userAnswers = {};
+    for await (const configFile of configFiles) {
+      if (!configFile.endsWith('.json')) {
+        console.log(
+          '🚨 ',
+          chalk.bold.red(configFile),
+          'is not a json file. Skipping...\n',
+        );
         continue;
       }
 
-      const filePath = resolve(rootDir, file);
+      const configFilePath = resolve(rootDirectory, configFile);
 
       try {
-        const contents = await import(filePath);
-        await readFileContents(contents, filePath, args, answered);
+        const configFileContents = await import(configFilePath);
+        await readFileContents(
+          configFileContents,
+          configFilePath,
+          commandArguments,
+          userAnswers,
+        );
       } catch (e) {
         await displayError(e);
       }
@@ -53,7 +52,28 @@ const readFiles = async (args: Record<string, any>) => {
   }
 };
 
-const validateFileContents = (
+export const readArgs = async () => {
+  const commandArguments = parser(process.argv.slice(2), {
+    configuration: {
+      'camel-case-expansion': false,
+    },
+  });
+
+  if (!commandArguments['config-files']) {
+    displayError(
+      new TypeError(
+        `Please, provide ${chalk.cyan(
+          '--config-files="./path-to-config-files"',
+        )}`,
+      ),
+    );
+    return;
+  }
+
+  await readFiles(commandArguments);
+};
+
+export const validateFileContents = (
   contents: Record<string, any>,
   filePath: string,
 ) => {
@@ -66,80 +86,106 @@ const validateFileContents = (
   }
 };
 
-const readFileContents = async (
-  contents: Record<string, any>,
-  filePath: string,
-  args: Record<string, any>,
-  answered: Record<string, any>,
+export const readFileContents = async (
+  configFileContents: Record<string, any>,
+  configFilePath: string,
+  commandArguments: Record<string, any>,
+  userAnswers: Record<string, any>,
 ) => {
-  validateFileContents(contents, filePath);
+  validateFileContents(configFileContents, configFilePath);
 
   const {
     outputFilePath,
     templateFilePath,
     template = {},
     ask = false,
-  } = contents;
+  } = configFileContents;
 
-  const mergedArgs = { ...template, ...args, ...answered };
+  const mergedArguments = { ...template, ...commandArguments, ...userAnswers };
 
   if (ask && Array.isArray(ask)) {
-    const answers = await inquirer.prompt(
-      ask.map((arg: string) => ({
-        name: arg,
-        default: mergedArgs[arg] ? mergedArgs[arg] : undefined,
-        message: `Substitution value for "${arg}"`,
+    const inquirerAnswers = await inquirer.prompt(
+      ask.map((argument: string) => ({
+        name: argument,
+        default: mergedArguments[argument]
+          ? mergedArguments[argument]
+          : undefined,
+        message: `✅ Substitution value for "${chalk.magenta(argument)}" `,
         type: 'input',
       })),
     );
 
-    Object.assign(answered, answers);
-    Object.assign(mergedArgs, answered);
+    Object.assign(userAnswers, inquirerAnswers);
+    Object.assign(mergedArguments, userAnswers);
   }
 
   const outputFilePathTemplate = handlebars.compile(outputFilePath);
-  const compiledOutputFilePath = outputFilePathTemplate(mergedArgs);
+  const compiledOutputFilePath = outputFilePathTemplate(mergedArguments);
 
   const templateFilePathTemplate = handlebars.compile(templateFilePath);
-  const compiledTemplateFilePath = templateFilePathTemplate(mergedArgs);
+  const compiledTemplateFilePath = templateFilePathTemplate(mergedArguments);
 
   const templateFileContents = handlebars.compile(
-    fs.readFileSync(compiledTemplateFilePath, {
+    await fs.readFile(compiledTemplateFilePath, {
       encoding: 'utf-8',
     }),
   );
 
-  const compiledFileContents = templateFileContents(mergedArgs);
+  const compiledFileContents = templateFileContents(mergedArguments);
   const baseOutputDir = dirname(compiledOutputFilePath);
 
-  if (!fs.existsSync(baseOutputDir)) {
-    fs.mkdirSync(baseOutputDir);
+  if (!fileExists(baseOutputDir)) {
+    await fs.mkdir(baseOutputDir);
   }
 
   try {
-    await fs.promises.writeFile(compiledOutputFilePath, compiledFileContents, {
+    await fs.writeFile(compiledOutputFilePath, compiledFileContents, {
       encoding: 'utf-8',
     });
     console.log(
-      chalk.green(`File ${compiledOutputFilePath} written successfully.`),
+      chalk.green(
+        `\n🆗 File "${chalk.cyan(
+          compiledOutputFilePath,
+        )}" written successfully.\n`,
+      ),
     );
   } catch (e) {
     await displayError(e);
   }
 };
 
-const displayError = async (error: Error) => {
-  console.log();
-  console.error(chalk.red('Error name:'), error.name);
-  console.error(chalk.red('Error message:'), error.message);
-  console.error(chalk.red('Error stack:'), error.stack);
+export const displayError = async (error: Error) => {
+  console.error(chalk.bold.red(`\n🚨 An error "${error.name}" happened:\n`));
+  console.error(chalk.red('🚨 Error name:\n'), chalk.yellow(error.name), '\n');
+  console.error(
+    chalk.red('🚨 Error message:\n'),
+    chalk.yellow(error.message),
+    '\n',
+  );
+  console.error(
+    chalk.red('🚨 Error stack:\n'),
+    chalk.yellow(error.stack),
+    '\n',
+  );
   console.log();
 };
 
-if (argv['config-files']) {
-  readFiles(argv);
-} else {
-  displayError(
-    new Error('Please, provide --config-files="./path-to-config-files"'),
-  );
-}
+export const run = () => {
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(
+      chalk.green('\n🆗 Files from template started creating your files...\n'),
+    );
+
+    readArgs()
+      .then(() => {
+        console.log(
+          chalk.green('\n✅ Files from template has done its job 🥳 🤓\n'),
+        );
+      })
+      .catch(async (e) => {
+        await displayError(e);
+      });
+  }
+};
+
+run();
