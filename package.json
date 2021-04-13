@@ -1,6 +1,6 @@
 {
   "name": "files-from-template",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Create files from templates defined by the user.",
   "main": "./dist/index.js",
   "scripts": {
@@ -37,7 +37,9 @@
   "dependencies": {
     "chalk": "^4.1.0",
     "handlebars": "^4.7.7",
-    "yargs": "^16.2.0"
+    "inquirer": "^8.0.0",
+    "yargs": "^16.2.0",
+    "yargs-parser": "^20.2.7"
   },
   "bin": {
     "files-from-template": "./dist/index.js"

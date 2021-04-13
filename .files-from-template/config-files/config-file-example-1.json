@@ -1,4 +1,10 @@
 {
   "templateFilePath": "./.files-from-template/template-files/template-file-example-1.hbs",
-  "outputFilePath": "./src/temp-output/{{ date }}.js"
+  "outputFilePath": "./src/temp-output/{{ fileName }}.js",
+  "ask": ["fileName"],
+  "template": {
+    "counter": "counter",
+    "counterValue": 0,
+    "counterMax": 20
+  }
 }

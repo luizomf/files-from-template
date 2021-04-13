@@ -16,6 +16,7 @@ It is pretty simple, but it must have at least two keys: `templateFilePath` and 
 {
   "templateFilePath": "./path-to-the-template-file.hbs",
   "outputFilePath": "./path-to-the-output-file.ext",
+  "ask": ["anyVariable1", "anyVariable2"],
   "template": {
     "anyVariable1": "realVariable1",
     "anyVariable2": "realVariable2",
@@ -26,7 +27,8 @@ It is pretty simple, but it must have at least two keys: `templateFilePath` and 
 
 - **templateFilePath** (*required*): path to the template file to be used
 - **outputFilePath** (*required*): path to the output file. You can using any extension you'd like
-- **template** (*optional*): any variable you use on your template file. The keys are the name of the variables you create on your handlebars template. For example: `{{ anyVariable1 }}` will be compiled to `realVariable1` in the example above.
+- **ask** (*optional*): an array of strings that will be used as variables for handlebars. Answers provided by the user will be used as values for these variables. For example, you may want to create a filename only on execution time, then use this option. The script will stop, ask a value for the key, and only continues when you provide the value. Every location you use that variable will have the same value you provided when asked.
+- **template** (*optional*): any variable you use on your template file. The keys are the name of the variables you create on your handlebars template. For example: `{{ anyVariable1 }}` will be compiled to `realVariable1` in the example above. Keep in mind that `ask` keys will overwrite this option.
 
 If you dont want to specify a `template` with the variables to replace, you can also add your variable names and real names via command. Like so:
 
@@ -264,3 +266,22 @@ If you want to pass command arguments to fft:
 ```
 npm run fft:example -- --arg1='val1' --arg2='val2'
 ```
+
+## Ask option
+
+Ask is just an array of strings that will be used as variables for handlebars. Ask will overwrite any other method you use for creating variables. For example:
+
+```json
+{
+  "templateFilePath": "./template-files/template-file-example-2.hbs",
+  "outputFilePath": "./src/output/{{ componentName }}",
+  "ask": ["componentName"],
+  "template": {
+    "componentName": "ParentComponent",
+    "anotherComponentName": "ChildComponent",
+    "text": "Hello world!"
+  }
+}
+```
+
+In the example above, `ask` will have greater priority than `template`, so the value of `componentName` will come from "ask". The value `ParentComponent` WILL NOT be used. Same for `--componentName` option via command line, `ask` will overwrite every other option to respect what the user wants.

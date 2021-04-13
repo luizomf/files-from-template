@@ -3,21 +3,23 @@
 
 import fs from 'fs';
 import { resolve, dirname } from 'path';
+import inquirer from 'inquirer';
 import chalk from 'chalk';
 import handlebars from 'handlebars';
-import yargs from 'yargs';
+import parser from 'yargs-parser';
 
-const argv = yargs.command<{ configFiles?: string }>(
-  'configFiles',
-  'Path to the config files',
-).argv;
+const argv = parser(process.argv.slice(2), {
+  configuration: {
+    'camel-case-expansion': false,
+  },
+});
 
-const readFiles = (args: Record<string, any>) => {
-  if (!args.configFiles) {
+const readFiles = async (args: Record<string, any>) => {
+  if (!args['config-files']) {
     throw new Error('No path to work with.');
   }
 
-  const path = args.configFiles as string;
+  const path = args['config-files'] as string;
 
   try {
     const stat = fs.lstatSync(path);
@@ -30,7 +32,7 @@ const readFiles = (args: Record<string, any>) => {
     const files = fs.readdirSync(rootDir);
     console.log();
 
-    for (const file of files) {
+    for await (const file of files) {
       if (!file.endsWith('.json')) {
         console.log(chalk.bold.red(file), 'is not a json file. Skipping...');
         continue;
@@ -38,13 +40,12 @@ const readFiles = (args: Record<string, any>) => {
 
       const filePath = resolve(rootDir, file);
 
-      import(filePath)
-        .then((contents) => {
-          readFileContents(contents, filePath, args);
-        })
-        .catch((e) => {
-          displayError(e);
-        });
+      try {
+        const contents = await import(filePath);
+        await readFileContents(contents, filePath, args);
+      } catch (e) {
+        await displayError(e);
+      }
     }
   } catch (e) {
     displayError(e);
@@ -64,20 +65,41 @@ const validateFileContents = (
   }
 };
 
-const readFileContents = (
+const readFileContents = async (
   contents: Record<string, any>,
   filePath: string,
   args: Record<string, any>,
 ) => {
   validateFileContents(contents, filePath);
 
-  const { outputFilePath, templateFilePath, template = {} } = contents;
+  const {
+    outputFilePath,
+    templateFilePath,
+    template = {},
+    ask = false,
+  } = contents;
+
+  const mergedArgs = { ...template, ...args };
+
+  if (ask && Array.isArray(ask)) {
+    const answers = await inquirer.prompt(
+      ask.map((arg: string) => ({
+        name: arg,
+        message: `Substitution value for "${arg}"`,
+        type: 'input',
+      })),
+    );
+
+    Object.assign(mergedArgs, answers);
+  }
+
+  console.log();
 
   const outputFilePathTemplate = handlebars.compile(outputFilePath);
-  const compiledOutputFilePath = outputFilePathTemplate(args);
+  const compiledOutputFilePath = outputFilePathTemplate(mergedArgs);
 
   const templateFilePathTemplate = handlebars.compile(templateFilePath);
-  const compiledTemplateFilePath = templateFilePathTemplate(args);
+  const compiledTemplateFilePath = templateFilePathTemplate(mergedArgs);
 
   const templateFileContents = handlebars.compile(
     fs.readFileSync(compiledTemplateFilePath, {
@@ -85,32 +107,26 @@ const readFileContents = (
     }),
   );
 
-  const compiledFileContents = templateFileContents({ ...template, ...args });
+  const compiledFileContents = templateFileContents(mergedArgs);
   const baseOutputDir = dirname(compiledOutputFilePath);
 
   if (!fs.existsSync(baseOutputDir)) {
     fs.mkdirSync(baseOutputDir);
   }
 
-  fs.writeFile(
-    compiledOutputFilePath,
-    compiledFileContents,
-    {
+  try {
+    await fs.promises.writeFile(compiledOutputFilePath, compiledFileContents, {
       encoding: 'utf-8',
-    },
-    (error) => {
-      if (error) {
-        displayError(error);
-      }
-
-      console.log(
-        chalk.green(`File ${compiledOutputFilePath} written successfully.`),
-      );
-    },
-  );
+    });
+    console.log(
+      chalk.green(`File ${compiledOutputFilePath} written successfully.`),
+    );
+  } catch (e) {
+    await displayError(e);
+  }
 };
 
-const displayError = (error: Error) => {
+const displayError = async (error: Error) => {
   console.log();
   console.error(chalk.red('Error name:'), error.name);
   console.error(chalk.red('Error message:'), error.message);
@@ -118,7 +134,7 @@ const displayError = (error: Error) => {
   console.log();
 };
 
-if (argv?.configFiles) {
+if (argv['config-files']) {
   readFiles(argv);
 } else {
   displayError(

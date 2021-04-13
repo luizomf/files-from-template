@@ -1,9 +1,0 @@
-{
-  "templateFilePath": "./.files-from-template/template-files/template-file-example-2.hbs",
-  "outputFilePath": "./src/temp-output/output-file2.tsx",
-  "template": {
-    "componentName": "ParentComponent",
-    "anotherComponentName": "ChildComponent",
-    "text": "Hello world!"
-  }
-}
