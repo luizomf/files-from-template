@@ -101,7 +101,12 @@ export const readFileContents = async (
     ask = false,
   } = configFileContents;
 
-  const mergedArguments = { ...template, ...commandArguments, ...userAnswers };
+  const mergedArguments = {
+    ...template,
+    ...commandArguments,
+    ...userAnswers,
+    ordered: commandArguments._,
+  };
 
   if (ask && Array.isArray(ask)) {
     const inquirerAnswers = await inquirer.prompt(

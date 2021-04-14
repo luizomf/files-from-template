@@ -285,3 +285,69 @@ Ask is just an array of strings that will be used as variables for handlebars. A
 ```
 
 In the example above, `ask` will have greater priority than `template`, so the value of `componentName` will come from "ask". The value `ParentComponent` WILL NOT be used. Same for `--componentName` option via command line, `ask` will overwrite every other option to respect what the user wants.
+
+## Command arguments
+
+The best way to use command line arguments is: `--keyName="TheValue" --anotherKey="123456"`. As mentioned before, this will result in an object like:
+
+```javascript
+{
+  keyName: "TheValue",
+  anotherKey: 123456
+}
+```
+
+It is intuitive and easy to use. But you can also send keys without values.
+
+Say you write a command like:
+
+```
+npx files-from-template --config-files="./config-files" --keyName="TheValue" --anotherKey="123456" argumentOne argumentTwo argumentThree
+```
+
+Note the `argumentOne argumentTwo argumentThree` part. Those arguments dont have any value or "--". They will result in an array called `ordered` in the resulting object. The values can also be used in handlebars.
+
+```javascript
+{
+  keyName: "TheValue",
+  anotherKey: 123456,
+  ordered: ["argumentOne", "argumentTwo", "argumentThree"]
+}
+```
+
+To use these values in your template file, you can use this syntax:
+
+```handlebars
+First ordered value -> {{ ordered.[0] }} -> Will resolve to argumentOne
+Second ordered value -> {{ ordered.[1] }} -> Will resolve to argumentTwo
+Third ordered value -> {{ ordered.[2] }} -> Will resolve to argumentThree
+```
+
+A real example:
+
+Command:
+```
+npx files-from-template --config-files="./config-files" counter 0 20
+```
+
+Template File:
+```handlebars
+let {{ ordered.[0] }} = {{ ordered.[1] }};
+
+while ({{ ordered.[0] }} < {{ ordered.[2] }}) {
+  console.log({{ ordered.[0] }});
+  {{ ordered.[0] }}++;
+}
+```
+
+Output file:
+```javascript
+let counter = 0;
+
+while (counter < 20) {
+  console.log(counter);
+  counter++;
+}
+```
+
+As far as I'm concerned, it is way less intuitive. But works =).

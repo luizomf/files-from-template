@@ -203,7 +203,7 @@ var readFileContents = function (configFileContents, configFilePath, commandArgu
             case 0:
                 exports.validateFileContents(configFileContents, configFilePath);
                 outputFilePath = configFileContents.outputFilePath, templateFilePath = configFileContents.templateFilePath, _a = configFileContents.template, template = _a === void 0 ? {} : _a, _b = configFileContents.ask, ask = _b === void 0 ? false : _b;
-                mergedArguments = __assign(__assign(__assign({}, template), commandArguments), userAnswers);
+                mergedArguments = __assign(__assign(__assign(__assign({}, template), commandArguments), userAnswers), { ordered: commandArguments._ });
                 if (!(ask && Array.isArray(ask))) return [3 /*break*/, 2];
                 return [4 /*yield*/, inquirer_1.default.prompt(ask.map(function (argument) { return ({
                         name: argument,
